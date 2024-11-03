@@ -59,6 +59,21 @@ impl PresentBox {
     pub fn get_surface_area_extra(&self) -> u32 {
         self.get_surface_area() + self.get_smallest_face()
     }
+
+    fn get_volume(&self) -> u32 {
+        self.width * self.height * self.length
+    }
+
+    fn get_shorter_sides(&self) -> (u32, u32) {
+        let mut sides = vec![self.width, self.length, self.height];
+        sides.sort();
+        (sides[0], sides[1])
+    }
+
+    pub fn get_ribbon_lenght(&self) -> u32 {
+        let (a, b) = self.get_shorter_sides();
+        a * 2 + b * 2 + self.get_volume()
+    }
 }
 
 #[cfg(test)]
@@ -167,6 +182,48 @@ mod tests {
                 .expect("Present box should create")
                 .get_surface_area_extra(),
             43
+        );
+    }
+
+    #[test]
+    fn test_box_volume() {
+        assert_eq!(
+            PresentBox::new("2x3x4")
+                .expect("Present box should create")
+                .get_volume(),
+            24
+        );
+    }
+
+    #[test]
+    fn test_box_shorter_sides() {
+        assert_eq!(
+            PresentBox::new("2x3x4")
+                .expect("Present box should create")
+                .get_shorter_sides(),
+            (2, 3)
+        );
+        assert_eq!(
+            PresentBox::new("1x1x10")
+                .expect("Present box should create")
+                .get_shorter_sides(),
+            (1, 1)
+        );
+    }
+
+    #[test]
+    fn test_box_ribbon_length() {
+        assert_eq!(
+            PresentBox::new("2x3x4")
+                .expect("Present box should create")
+                .get_ribbon_lenght(),
+            34
+        );
+        assert_eq!(
+            PresentBox::new("1x1x10")
+                .expect("Present box should create")
+                .get_ribbon_lenght(),
+            14
         );
     }
 }
