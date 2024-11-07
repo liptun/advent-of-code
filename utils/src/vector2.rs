@@ -1,4 +1,4 @@
-#[derive(Debug)]
+#[derive(Debug, Clone)]
 pub struct Vector2 {
     pub x: i32,
     pub y: i32,
