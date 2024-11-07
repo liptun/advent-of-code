@@ -1,6 +1,16 @@
 use std::collections::HashMap;
 use utils::vector2::*;
 
+pub trait Coordinates {
+    fn get_coords_str(&self) -> String;
+}
+
+impl Coordinates for Vector2 {
+    fn get_coords_str(&self) -> String {
+        format!("_at_{}_{}", self.x, self.y)
+    }
+}
+
 pub enum DeliveryBy {
     Santa,
     RoboSanta
@@ -72,5 +82,15 @@ mod tests {
         route.visit_house(DeliveryBy::RoboSanta);
 
         assert_eq!(route.visited_houses.len(), 1);
+    }
+
+    #[test]
+    fn test_vector_get_coords_str_trait() {
+        assert_eq!(Vector2::new(3, 5).get_coords_str(), "_at_3_5".to_string());
+        assert_eq!(Vector2::new(0, 0).get_coords_str(), "_at_0_0".to_string());
+        assert_eq!(
+            Vector2::new(-10, 4).get_coords_str(),
+            "_at_-10_4".to_string()
+        );
     }
 }

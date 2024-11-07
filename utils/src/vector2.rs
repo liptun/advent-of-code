@@ -29,10 +29,6 @@ impl Vector2 {
     pub fn right() -> Self {
         Vector2::new(1, 0)
     }
-
-    pub fn get_coords_str(&self) -> String {
-        format!("_at_{}_{}", self.x, self.y)
-    }
 }
 
 #[cfg(test)]
@@ -46,15 +42,6 @@ mod tests {
         assert_eq!(vector.y, 4);
     }
 
-    #[test]
-    fn test_vector_get_coords_str() {
-        assert_eq!(Vector2::new(3, 5).get_coords_str(), "_at_3_5".to_string());
-        assert_eq!(Vector2::new(0, 0).get_coords_str(), "_at_0_0".to_string());
-        assert_eq!(
-            Vector2::new(-10, 4).get_coords_str(),
-            "_at_-10_4".to_string()
-        );
-    }
 
     #[test]
     fn test_vector_add() {
