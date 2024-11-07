@@ -1,11 +1,9 @@
 mod santa_route;
-mod vector2;
 use std::fs;
 use std::io::Error;
-
+use utils::vector2::*;
 use santa_route::*;
 
-use vector2::*;
 
 fn main() -> Result<(), Error> {
     let input = fs::read_to_string("input.txt")?;

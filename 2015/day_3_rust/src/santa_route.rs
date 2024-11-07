@@ -1,5 +1,5 @@
 use std::collections::HashMap;
-use crate::Vector2;
+use utils::vector2::*;
 
 pub enum DeliveryBy {
     Santa,
