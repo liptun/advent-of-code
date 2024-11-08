@@ -1,12 +1,10 @@
-use std::cmp;
-
 use utils::vector2::Vector2;
 
 use crate::command::*;
 
 pub struct Lights {
     pub grid: Vec<u32>,
-    size: usize,
+    pub size: usize,
 }
 
 impl Lights {

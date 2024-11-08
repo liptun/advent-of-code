@@ -11,6 +11,31 @@ mod command;
 mod lights;
 mod vector2_ext;
 
+fn scale_brightness(value: u32, max_brightness: u32) -> u8 {
+    let scaled = (value as f32 / max_brightness as f32 * 255.0).round() as u8;
+    scaled
+}
+
+fn lights_to_image(lights: &Lights, filename: &str) {
+    let mut img: RgbImage = RgbImage::new(lights.size as u32, lights.size as u32);
+
+    let max_brightness = *lights.grid.iter().max().unwrap();
+
+    for (index, light) in lights.grid.iter().enumerate() {
+        let pos = lights.index_to_vector(&index);
+
+        let brightness = scale_brightness(*light, max_brightness);
+
+        img.put_pixel(
+            pos.x as u32,
+            pos.y as u32,
+            Rgb([brightness, brightness, brightness]),
+        );
+    }
+
+    img.save(filename).unwrap();
+}
+
 fn main() -> Result<(), Error> {
     let file = File::open("input.txt")?;
     let reader = BufReader::new(file);
@@ -38,20 +63,8 @@ fn main() -> Result<(), Error> {
     let total_brightness: u32 = lights_pt2.grid.iter().sum();
     println!("Total brightness {}", total_brightness);
 
-    let mut img: RgbImage = RgbImage::new(1000, 1000);
-
-    for (index, light) in lights.grid.iter().enumerate() {
-        let pos = lights.index_to_vector(&index);
-
-        let color = if *light == 1 {
-            Rgb([255, 255, 255])
-        } else {
-            Rgb([0, 0, 0])
-        };
-        img.put_pixel(pos.x as u32, pos.y as u32, color);
-    }
-
-    img.save("part1.png").unwrap();
+    lights_to_image(&lights, "part1.png");
+    lights_to_image(&lights_pt2, "part2.png");
 
     Ok(())
 }
