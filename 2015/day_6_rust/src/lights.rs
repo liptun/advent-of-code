@@ -1,3 +1,5 @@
+use std::cmp;
+
 use utils::vector2::Vector2;
 
 use crate::command::*;
@@ -59,7 +61,7 @@ impl Lights {
         false
     }
 
-    pub fn exec(&mut self, command: Command) -> () {
+    pub fn exec(&mut self, command: &Command) -> () {
         let mut x_asix_range: Vec<usize> = vec![command.start.x as usize, command.end.x as usize];
         let mut y_asix_range: Vec<usize> = vec![command.start.y as usize, command.end.y as usize];
         x_asix_range.sort();
@@ -79,6 +81,32 @@ impl Lights {
                         CommandOperation::TurnOn => self.set(&pos, 1),
                         CommandOperation::TurnOff => self.set(&pos, 0),
                         CommandOperation::Toggle => self.set(&pos, if *light == 0 { 1 } else { 0 }),
+                    };
+                }
+            }
+        }
+    }
+
+    pub fn exec_pt2(&mut self, command: &Command) -> () {
+        let mut x_asix_range: Vec<usize> = vec![command.start.x as usize, command.end.x as usize];
+        let mut y_asix_range: Vec<usize> = vec![command.start.y as usize, command.end.y as usize];
+        x_asix_range.sort();
+        y_asix_range.sort();
+
+        let x_start = *x_asix_range.get(0).unwrap_or(&0);
+        let x_end = *x_asix_range.get(1).unwrap_or(&0);
+        let y_start = *y_asix_range.get(0).unwrap_or(&0);
+        let y_end = *y_asix_range.get(1).unwrap_or(&0);
+
+        for x in x_start..=x_end {
+            for y in y_start..=y_end {
+                let pos = Vector2::new(x as i32, y as i32);
+
+                if let Some(light) = self.get(&pos) {
+                    match command.operation {
+                        CommandOperation::TurnOn => self.set(&pos, *light + 1),
+                        CommandOperation::TurnOff => self.set(&pos, light.saturating_sub(1)),
+                        CommandOperation::Toggle => self.set(&pos, *light + 2),
                     };
                 }
             }
@@ -128,10 +156,7 @@ mod tests {
         assert!(matches!(lights.get(&Vector2::new(0, 0)), Some(1)));
 
         assert_eq!(lights.set(&Vector2::new(999, 999), 1), true);
-        assert!(matches!(
-            lights.get(&Vector2::new(999, 999)),
-            Some(1)
-        ));
+        assert!(matches!(lights.get(&Vector2::new(999, 999)), Some(1)));
 
         assert_eq!(lights.set(&Vector2::new(1000, 1000), 1), false);
     }
@@ -140,26 +165,14 @@ mod tests {
     fn test_lights_exec() {
         let mut lights = Lights::new();
 
-        lights.exec(Command::new("turn on 0,0 through 999,999").unwrap());
-        assert!(matches!(
-            lights.get(&Vector2::new(500, 500)),
-            Some(1)
-        ));
+        lights.exec(&Command::new("turn on 0,0 through 999,999").unwrap());
+        assert!(matches!(lights.get(&Vector2::new(500, 500)), Some(1)));
 
-        lights.exec(Command::new("toggle 0,0 through 999,0").unwrap());
-        assert!(matches!(
-            lights.get(&Vector2::new(500, 0)),
-            Some(0)
-        ));
+        lights.exec(&Command::new("toggle 0,0 through 999,0").unwrap());
+        assert!(matches!(lights.get(&Vector2::new(500, 0)), Some(0)));
 
-        assert!(matches!(
-            lights.get(&Vector2::new(500, 500)),
-            Some(1)
-        ));
-        lights.exec(Command::new("turn off 499,499 through 500,500").unwrap());
-        assert!(matches!(
-            lights.get(&Vector2::new(500, 500)),
-            Some(0)
-        ));
+        assert!(matches!(lights.get(&Vector2::new(500, 500)), Some(1)));
+        lights.exec(&Command::new("turn off 499,499 through 500,500").unwrap());
+        assert!(matches!(lights.get(&Vector2::new(500, 500)), Some(0)));
     }
 }

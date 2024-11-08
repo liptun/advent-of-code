@@ -15,23 +15,28 @@ fn main() -> Result<(), Error> {
     let file = File::open("input.txt")?;
     let reader = BufReader::new(file);
 
-    let mut lights = Lights::new();
-
-    for command in reader
+    let commands: Vec<Command> = reader
         .lines()
         .filter_map(Result::ok)
         .map(|c| Command::new(&c))
         .filter_map(Result::ok)
-    {
+        .collect();
+
+    // Part 1
+    let mut lights = Lights::new();
+    for command in commands.iter() {
         lights.exec(command);
     }
-
-    let lights_lit = lights
-        .grid
-        .iter()
-        .filter(|&x| matches!(x, 1))
-        .count();
+    let lights_lit = lights.grid.iter().filter(|&x| matches!(x, 1)).count();
     println!("Lights lit {}", lights_lit);
+
+    // Part 2
+    let mut lights_pt2 = Lights::new();
+    for command in commands.iter() {
+        lights_pt2.exec_pt2(command);
+    }
+    let total_brightness: u32 = lights_pt2.grid.iter().sum();
+    println!("Total brightness {}", total_brightness);
 
     let mut img: RgbImage = RgbImage::new(1000, 1000);
 
