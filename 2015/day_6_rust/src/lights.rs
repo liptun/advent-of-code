@@ -2,14 +2,8 @@ use utils::vector2::Vector2;
 
 use crate::command::*;
 
-#[derive(Clone, Debug)]
-pub enum Light {
-    Lit,
-    Dimm,
-}
-
 pub struct Lights {
-    pub grid: Vec<Light>,
+    pub grid: Vec<u32>,
     size: usize,
 }
 
@@ -18,7 +12,7 @@ impl Lights {
         let size = 1000_usize;
         Self {
             size,
-            grid: vec![Light::Dimm; size * size],
+            grid: vec![0; size * size],
         }
     }
 
@@ -36,7 +30,7 @@ impl Lights {
         Vector2::new(x as i32, y as i32)
     }
 
-    fn get(&self, pos: &Vector2) -> Option<&Light> {
+    fn get(&self, pos: &Vector2) -> Option<&u32> {
         if self.is_pos_out_of_bounds(&pos) {
             return None;
         }
@@ -50,7 +44,7 @@ impl Lights {
         }
     }
 
-    fn set(&mut self, pos: &Vector2, state: Light) -> bool {
+    fn set(&mut self, pos: &Vector2, state: u32) -> bool {
         if self.is_pos_out_of_bounds(&pos) {
             return false;
         }
@@ -82,15 +76,9 @@ impl Lights {
 
                 if let Some(light) = self.get(&pos) {
                     match command.operation {
-                        CommandOperation::TurnOn => self.set(&pos, Light::Lit),
-                        CommandOperation::TurnOff => self.set(&pos, Light::Dimm),
-                        CommandOperation::Toggle => self.set(
-                            &pos,
-                            match light {
-                                Light::Lit => Light::Dimm,
-                                Light::Dimm => Light::Lit,
-                            },
-                        ),
+                        CommandOperation::TurnOn => self.set(&pos, 1),
+                        CommandOperation::TurnOff => self.set(&pos, 0),
+                        CommandOperation::Toggle => self.set(&pos, if *light == 0 { 1 } else { 0 }),
                     };
                 }
             }
@@ -109,11 +97,11 @@ mod tests {
         assert_eq!(lights.grid.len(), lights.size * lights.size);
 
         assert!(
-            matches!(lights.get(&Vector2::new(0, 0)), Some(Light::Dimm)),
+            matches!(lights.get(&Vector2::new(0, 0)), Some(0)),
             "should get light at 0,0"
         );
         assert!(
-            matches!(lights.get(&Vector2::new(999, 999)), Some(Light::Dimm)),
+            matches!(lights.get(&Vector2::new(999, 999)), Some(0)),
             "should get light at 999,999"
         );
         assert!(
@@ -134,18 +122,18 @@ mod tests {
     fn test_lights_set() {
         let mut lights = Lights::new();
 
-        assert!(matches!(lights.get(&Vector2::new(0, 0)), Some(Light::Dimm)));
+        assert!(matches!(lights.get(&Vector2::new(0, 0)), Some(0)));
 
-        assert_eq!(lights.set(&Vector2::new(0, 0), Light::Lit), true);
-        assert!(matches!(lights.get(&Vector2::new(0, 0)), Some(Light::Lit)));
+        assert_eq!(lights.set(&Vector2::new(0, 0), 1), true);
+        assert!(matches!(lights.get(&Vector2::new(0, 0)), Some(1)));
 
-        assert_eq!(lights.set(&Vector2::new(999, 999), Light::Lit), true);
+        assert_eq!(lights.set(&Vector2::new(999, 999), 1), true);
         assert!(matches!(
             lights.get(&Vector2::new(999, 999)),
-            Some(Light::Lit)
+            Some(1)
         ));
 
-        assert_eq!(lights.set(&Vector2::new(1000, 1000), Light::Lit), false);
+        assert_eq!(lights.set(&Vector2::new(1000, 1000), 1), false);
     }
 
     #[test]
@@ -155,23 +143,23 @@ mod tests {
         lights.exec(Command::new("turn on 0,0 through 999,999").unwrap());
         assert!(matches!(
             lights.get(&Vector2::new(500, 500)),
-            Some(Light::Lit)
+            Some(1)
         ));
 
         lights.exec(Command::new("toggle 0,0 through 999,0").unwrap());
         assert!(matches!(
             lights.get(&Vector2::new(500, 0)),
-            Some(Light::Dimm)
+            Some(0)
         ));
 
         assert!(matches!(
             lights.get(&Vector2::new(500, 500)),
-            Some(Light::Lit)
+            Some(1)
         ));
         lights.exec(Command::new("turn off 499,499 through 500,500").unwrap());
         assert!(matches!(
             lights.get(&Vector2::new(500, 500)),
-            Some(Light::Dimm)
+            Some(0)
         ));
     }
 }
